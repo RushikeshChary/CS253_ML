@@ -15,20 +15,20 @@ def convert_crore_to_float(crore_str):
     Returns:
         The float value of the number in crore, or NaN if the format is invalid.
     """
-    crore_str = crore_str.strip().lower()  # Remove leading/trailing spaces and convert to lowercase
-    if isinstance(crore_str, float) and np.isnan(crore_str):
-        return np.nan  # Return NaN if already NaN
+    if crore_str == '0':
+        return 0
+    crore_str = crore_str.strip()  # Remove leading/trailing spaces
     try:
-        if crore_str.endswith(' crore+'):
-            return float(crore_str.replace(' crore+', '')) * 10000000
-        elif crore_str.endswith(' lac+'):
-            return float(crore_str.replace(' lac+', '')) * 100000
-        elif crore_str.endswith(' thou+'):
-            return float(crore_str.replace(' thou+', '')) * 1000
-        elif crore_str.endswith(' hund+'):
-            return float(crore_str.replace(' hund+', '')) * 100
-        else:
-            return float(crore_str)  # If no unit is specified, assume it's already in crore
+        number = float(crore_str.split(" ")[0])  # Extract the number before 'Crore'
+        unit = crore_str.split(" ")[-1].lower()  # Get the unit (Crore or Crore+)
+
+        unit_multiplier = {
+            "crore": 10000000,
+            "lac": 10000,
+            "thou": 1000,
+            "hund": 1000,
+        }
+        return number * unit_multiplier.get(unit, np.nan)  # Use get with default of NaN
     except ValueError:
         return np.nan  # Return NaN for invalid formats
 
@@ -79,4 +79,4 @@ y_pred = rf_classifier.predict(X_test)
 predictions_df = pd.DataFrame({'ID': data_test['ID'], 'Education': y_pred})
 
 # Write predictions to a CSV file
-predictions_df.to_csv('predictions_randomforest.csv', index=False)
+predictions_df.to_csv('predictions3.csv', index=False)

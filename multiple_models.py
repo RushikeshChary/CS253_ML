@@ -29,8 +29,8 @@ data_train = pd.read_csv('train.csv')
 data_test = pd.read_csv('test.csv')
 
 # Remove leading/trailing spaces from column names
-data_train.columns = data_train.columns.str.strip()
-data_test.columns = data_test.columns.str.strip()
+# data_train.columns = data_train.columns.str.strip()
+# data_test.columns = data_test.columns.str.strip()
 
 # Apply conversion function to monetary columns 
 try:
