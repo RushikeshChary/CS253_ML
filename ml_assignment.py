@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-# from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
-# from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+from sklearn.metrics import f1_score
 
 # Function to convert monetary values to numeric
 def convert_to_float(crore_str):
@@ -65,7 +65,7 @@ plt.ylabel('Party')
 plt.title('Percentage Distribution of Parties with Candidates Having Criminal Records')
 plt.show()
 # *******************************************************************************************************************************
-# # Plot representing the party's percentage wealth.***************************************************************************
+# Plot representing the party's percentage wealth.***************************************************************************
 wealthy_candidates_data = data[data['Total Assets'] > 0]
 
 # Group the data by party and calculate the total declared wealth for candidates in each party
@@ -112,4 +112,5 @@ predictions_df.to_csv('predictions.csv', index=False)
 
 # Evaluation
 # print("Accuracy:", accuracy_score(y_test, y_pred))
-# print(classification_report(y_test, y_pred))
+# Calculate F1 score
+# print("F1 Score:", f1_score(y_test, y_pred, average='weighted'))

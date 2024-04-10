@@ -49,6 +49,8 @@ data_train = pd.get_dummies(data_train, columns=['Party', 'state'])
 data_test = pd.get_dummies(data_test, columns=['Party', 'state'])
 
 # Drop columns (if desired)
+data_train['tot_revenue'] = data_train['Total Assets'] - data_train['Liabilities']
+data_test['tot_revenue'] = data_test['Total Assets'] - data_test['Liabilities']
 drop_cols = ['ID', 'Candidate', 'Constituency ∇', 'Education']  
 X_train = data_train.drop(columns=drop_cols)
 y_train = data_train['Education']
@@ -60,6 +62,7 @@ param_grid = {
     'max_depth': [None, 10, 20],
     'min_samples_split': [2, 5, 10],
     'min_samples_leaf': [1, 2, 4],
+    'max_features': ['auto','sqrt', 'log2']
 }
 
 # Initialize RandomForestClassifier
