@@ -1,25 +1,17 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import f1_score
 
 # Function to convert monetary values to numeric
-def convert_crore_to_float(crore_str):
-    """
-    This function converts a string in crore format (e.g., '32 Crore+') to a float value.
-
-    Args:
-        crore_str: The string representation of a number in crore format.
-
-    Returns:
-        The float value of the number in crore, or NaN if the format is invalid.
-    """
+def convert_to_float(crore_str):
+    crore_str = crore_str.strip().lower()  
     if isinstance(crore_str, float) and np.isnan(crore_str):
-        return np.nan  # Return NaN if already NaN
-    crore_str = crore_str.strip().lower()  # Remove leading/trailing spaces and convert to lowercase
-    if crore_str == '0':
-        return 0.0
+        return np.nan  
     try:
         if crore_str.endswith(' crore+'):
             return float(crore_str.replace(' crore+', '')) * 10000000
@@ -30,59 +22,61 @@ def convert_crore_to_float(crore_str):
         elif crore_str.endswith(' hund+'):
             return float(crore_str.replace(' hund+', '')) * 100
         else:
-            return float(crore_str)  # If no unit is specified, assume it's already in crore
+            return float(crore_str)  
     except ValueError:
-        return np.nan  # Return NaN for invalid formats
+        return np.nan  
 
 # Load the dataset
 data = pd.read_csv('train.csv')
 data_test = pd.read_csv('test.csv')
 
+# Explore the data
+print(data.head())
+
 # Remove leading/trailing spaces from column names
 data.columns = data.columns.str.strip()
 data_test.columns = data_test.columns.str.strip()
 
-# Encode categorical variables
-data = pd.get_dummies(data, columns=['Party', 'state'])
-data_test = pd.get_dummies(data_test, columns=['Party', 'state'])
-
 # Apply conversion function to monetary columns (handling potential errors)
 try:
-    data['Total Assets'] = data['Total Assets'].apply(convert_crore_to_float)
-    data['Liabilities'] = data['Liabilities'].apply(convert_crore_to_float)
-    data_test['Total Assets'] = data_test['Total Assets'].apply(convert_crore_to_float)
-    data_test['Liabilities'] = data_test['Liabilities'].apply(convert_crore_to_float)
+    data['Total Assets'] = data['Total Assets'].apply(convert_to_float)
+    data['Liabilities'] = data['Liabilities'].apply(convert_to_float)
+    data_test['Total Assets'] = data_test['Total Assets'].apply(convert_to_float)
+    data_test['Liabilities'] = data_test['Liabilities'].apply(convert_to_float)
 except:
     print("Error occurred during conversion. Check data format!")
 
-# Drop columns (if desired)
-drop_cols = ['Candidate', 'Constituency ∇', 'Education']  # Example columns to drop
-X = data.drop(columns=drop_cols)
-X_test = data_test.drop(columns=[ 'Candidate', 'Constituency ∇'])
-y = data['Education']
+# # Plot representing the percentage of candidates with criminal records.*********************************************************
 
-# Define hyperparameters to tune
-param_grid = {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance']}
+# Filter the dataset to include only candidates with criminal records
+criminal_records_data = data[data['Criminal Case'] > 0]
 
-# Initialize KNN classifier
-knn_classifier = KNeighborsClassifier()
+# Group the data by party and count the number of candidates in each party
+party_counts = criminal_records_data['Party'].value_counts()
 
-# Perform grid search
-grid_search = GridSearchCV(knn_classifier, param_grid, cv=5, scoring='f1_macro')
-grid_search.fit(X, y)
+# Calculate the percentage of candidates in each party
+percentage_distribution = (party_counts / party_counts.sum()) * 100
 
-# Get best parameters and best score
-best_params = grid_search.best_params_
-best_score = grid_search.best_score_
+# Plot the percentage distribution
+plt.figure(figsize=(10, 6))
+sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='viridis')
+plt.xlabel('Percentage of Candidates with Criminal Records')
+plt.ylabel('Party')
+plt.title('Percentage Distribution of Parties with Candidates Having Criminal Records')
+plt.show()
+# *******************************************************************************************************************************
+# Plot representing the party's percentage wealth.***************************************************************************
+wealthy_candidates_data = data[data['Total Assets'] > 0]
 
-print("Best Parameters:", best_params)
-print("Best Score:", best_score)
+# Group the data by party and calculate the total declared wealth for candidates in each party
+party_wealth = wealthy_candidates_data.groupby('Party')['Total Assets'].sum()
 
-# Predictions
-y_pred = grid_search.predict(X_test)
+total_wealth = party_wealth.sum()
+percentage_distribution = (party_wealth / total_wealth) * 100
 
-# Convert y_pred to a DataFrame with 'ID' column from the test dataset
-predictions_df = pd.DataFrame({'ID': data_test['ID'], 'Education': y_pred})
-
-# Write predictions to a CSV file
-predictions_df.to_csv('predictions_k-neighbour.csv', index=False)
+plt.figure(figsize=(10, 6))
+sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='magma')
+plt.xlabel('Percentage of Total Wealth')
+plt.ylabel('Party')
+plt.title('Percentage Distribution of Parties with the Most Wealthy Candidates')
+plt.show()
