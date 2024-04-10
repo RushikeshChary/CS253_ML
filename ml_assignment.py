@@ -1,11 +1,10 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV
+# from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
+# from sklearn.metrics import accuracy_score, classification_report
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.impute import SimpleImputer  # For missing value imputation
 
 
 # Function to convert monetary values to numeric
@@ -32,7 +31,7 @@ data = pd.read_csv('train.csv')
 data_test = pd.read_csv('test.csv')
 
 # Explore the data
-# print(data.head())
+print(data.head())
 
 # Remove leading/trailing spaces from column names
 data.columns = data.columns.str.strip()
@@ -65,7 +64,7 @@ plt.xlabel('Percentage of Candidates with Criminal Records')
 plt.ylabel('Party')
 plt.title('Percentage Distribution of Parties with Candidates Having Criminal Records')
 plt.show()
-
+# *******************************************************************************************************************************
 # # Plot representing the party's percentage wealth.***************************************************************************
 wealthy_candidates_data = data[data['Total Assets'] > 0]
 
@@ -87,34 +86,16 @@ data['tot_revenue'] = data['Total Assets'] - data['Liabilities']
 data_test['tot_revenue'] = data_test['Total Assets'] - data_test['Liabilities']
 drop_cols = ['ID', 'Candidate', 'Constituency ∇', 'Education']  # Example columns to drop
 X = data.drop(columns=drop_cols)
-# X_test = data_test.drop(columns=['ID', 'Candidate', 'Constituency ∇'])
+X_test = data_test.drop(columns=['ID', 'Candidate', 'Constituency ∇'])
 y = data['Education']
 
 # Encode categorical variables
 X = pd.get_dummies(X, columns=['Party', 'state'])
-# X_test = pd.get_dummies(X_test, columns=['Party', 'state'])
+X_test = pd.get_dummies(X_test, columns=['Party', 'state'])
 
 # Split data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2024)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2024)
 
-# Define parameter grid for grid search
-# param_grid = {
-#     'n_estimators': [50, 100, 150],
-#     'max_depth': [None, 10, 20],
-#     'min_samples_split': [2, 5, 10],
-#     'min_samples_leaf': [1, 2, 4],
-# }
-
-# # Initialize RandomForestClassifier
-# rf_classifier = RandomForestClassifier(random_state=42)
-
-# # Perform grid search using GridSearchCV with 'accuracy' scoring
-# grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5, scoring='f1_macro', n_jobs=-1)
-# grid_search.fit(X_train, y_train)
-
-# # Get the best parameters
-# best_params = grid_search.best_params_
-# print("Best Parameters:", best_params)
 best_params = best_params ={'max_depth': None, 'max_features': 'log2', 'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 100}
 # Train model with best parameters on entire training data
 best_rf_classifier = RandomForestClassifier(random_state=42, **best_params)
@@ -124,23 +105,11 @@ best_rf_classifier.fit(X, y)
 y_pred = best_rf_classifier.predict(X_test)
 
 # Convert predictions to a DataFrame with 'ID' column from the test dataset
-# predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
+predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
 
 # Write predictions to a CSV file
-# predictions_df.to_csv('predictions3.csv', index=False)
+predictions_df.to_csv('predictions.csv', index=False)
 
 # Evaluation
-print("Accuracy:", accuracy_score(y_test, y_pred))
+# print("Accuracy:", accuracy_score(y_test, y_pred))
 # print(classification_report(y_test, y_pred))
-
-# Visualize feature importance
-# plt.figure(figsize=(10, 6))
-# feature_importance = pd.Series(rf_classifier.feature_importances_, index=X.columns)
-# feature_importance.nlargest(10).plot(kind='barh')
-# plt.xlabel('Feature Importance')
-# plt.ylabel('Features')
-# plt.title('Top 10 Important Features')
-# plt.show()
-
-# Load the dataset
-
