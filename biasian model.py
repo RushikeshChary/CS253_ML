@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score, classification_report
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
+from sklearn.naive_bayes import BernoulliNB
 
 # Function to convert monetary values to numeric
 def convert_to_float(crore_str):
@@ -31,7 +32,7 @@ data = pd.read_csv('train.csv')
 data_test = pd.read_csv('test.csv')
 
 # Explore the data
-print(data.head())
+# print(data.head())
 
 # Remove leading/trailing spaces from column names
 data.columns = data.columns.str.strip()
@@ -47,58 +48,40 @@ except:
     print("Error occurred during conversion. Check data format!")
 
 # Drop columns (if desired)
-data['tot_revenue'] = data['Total Assets'] + data['Liabilities']
-data_test['tot_revenue'] = data_test['Total Assets'] - data_test['Liabilities']
-drop_cols = ['ID', 'Candidate', 'Constituency ∇', 'Education']  # Example columns to drop
+# data['tot_revenue'] = data['Total Assets'] + data['Liabilities']
+# data_test['tot_revenue'] = data_test['Total Assets'] + data_test['Liabilities']
+drop_cols = ['ID', 'Candidate', 'Constituency ∇', 'Education', 'Total Assets', 'Liabilities']  # Example columns to drop
 X = data.drop(columns=drop_cols)
-X_test = data_test.drop(columns=['ID', 'Candidate', 'Constituency ∇'])
+# X_test = data_test.drop(columns=['ID', 'Candidate', 'Constituency ∇','Total Assets', 'Liabilities'])
 y = data['Education']
 
 # Encode categorical variables
 X = pd.get_dummies(X, columns=['Party', 'state'])
-X_test = pd.get_dummies(X_test, columns=['Party', 'state'])
+# X_test = pd.get_dummies(X_test, columns=['Party', 'state'])
 
 # Split data into train and test sets
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2024)
-
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
-from sklearn.naive_bayes import MultinomialNB
-
-# Define parameter grid for hyperparameter tuning
-param_grid = {
-    'alpha': [0.1,0.25, 0.5,0.75, 1.0],  # Laplace smoothing parameter
-    # 'fit_prior': [True, False],  # Whether to learn class prior probabilities or not
-    # 'class_prior': [None, [0.5, 0.5], [0.3, 0.7]],  # Class prior probabilities
-    # 'normalize': [True, False]  # Whether to normalize feature counts or not
-    # Add more hyperparameters to tune as needed
-}
-
-# Instantiate Multinomial Naive Bayes classifier
-mnb_classifier = MultinomialNB()
-
-# Define cross-validation strategy
-cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-
-# Instantiate GridSearchCV
-grid_search = GridSearchCV(estimator=mnb_classifier, param_grid=param_grid, scoring='f1_weighted', cv=cv)
-
-# Fit GridSearchCV to training data
-grid_search.fit(X, y)
-
-# Get the best estimator
-best_mnb_classifier = grid_search.best_estimator_
-
-# Predictions on the test data using the best estimator
-y_pred = best_mnb_classifier.predict(X_test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2024)
 
 
-predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
+model = BernoulliNB(alpha=0.5, binarize=0.1,fit_prior=True,class_prior=None)
+model.fit(X_train, y_train)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
 
 # Write predictions to a CSV file
-predictions_df.to_csv('predictions_bayes.csv', index=False)
+# predictions_df.to_csv('predictions_bayes_1.csv', index=False)
 
-# Calculate F1 score for Multinomial Naive Bayes
-# f1_mnb = f1_score(y_test, y_pred_mnb, average='weighted')
+# Evaluation
+print("Accuracy:", accuracy_score(y_test, y_pred))
+# Calculate F1 score
+print("F1 Score:", f1_score(y_test, y_pred, average='weighted'))
+# Latests scores
+# Accuracy: 0.22572815533980584
+# F1 Score: 0.20070918218498388
 
-# print("Best hyperparameters:", grid_search.best_params_)
-# print("F1 Score (Multinomial Naive Bayes with GridSearchCV):", f1_mnb)
+# Scores without totassets, liabilities and tort_rev.
+# Accuracy: 0.22815533980582525
+# F1 Score: 0.20146484382535346
