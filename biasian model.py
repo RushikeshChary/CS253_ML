@@ -36,38 +36,38 @@ data_test = pd.read_csv('test.csv')
 # print(data.head())
 # # Plot representing the percentage of candidates with criminal records.*********************************************************
 
-# Filter the dataset to include only candidates with criminal records
-criminal_records_data = data[data['Criminal Case'] > 0]
+# # Filter the dataset to include only candidates with criminal records
+# criminal_records_data = data[data['Criminal Case'] > 0]
 
-# Group the data by party and count the number of candidates in each party
-party_counts = criminal_records_data['Party'].value_counts()
+# # Group the data by party and count the number of candidates in each party
+# party_counts = criminal_records_data['Party'].value_counts()
 
-# Calculate the percentage of candidates in each party
-percentage_distribution = (party_counts / party_counts.sum()) * 100
+# # Calculate the percentage of candidates in each party
+# percentage_distribution = (party_counts / party_counts.sum()) * 100
 
-# Plot the percentage distribution
-plt.figure(figsize=(15, 12))
-sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='viridis')
-plt.xlabel('Percentage of Candidates with Criminal Records')
-plt.ylabel('Party')
-plt.title('Percentage Distribution of Parties with Candidates Having Criminal Records')
-plt.show()
+# # Plot the percentage distribution
+# plt.figure(figsize=(15, 12))
+# sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='viridis')
+# plt.xlabel('Percentage of Candidates with Criminal Records')
+# plt.ylabel('Party')
+# plt.title('Percentage Distribution of Parties with Candidates Having Criminal Records')
+# plt.show()
 
-# # Plot representing the party's percentage wealth.***************************************************************************
-wealthy_candidates_data = data[data['Total Assets'] > 0]
+# # # Plot representing the party's percentage wealth.***************************************************************************
+# wealthy_candidates_data = data[data['Total Assets'] > 0]
 
-# Group the data by party and calculate the total declared wealth for candidates in each party
-party_wealth = wealthy_candidates_data.groupby('Party')['Total Assets'].sum()
+# # Group the data by party and calculate the total declared wealth for candidates in each party
+# party_wealth = wealthy_candidates_data.groupby('Party')['Total Assets'].sum()
 
-total_wealth = party_wealth.sum()
-percentage_distribution = (party_wealth / total_wealth) * 100
+# total_wealth = party_wealth.sum()
+# percentage_distribution = (party_wealth / total_wealth) * 100
 
-plt.figure(figsize=(10, 6))
-sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='magma')
-plt.xlabel('Percentage of Total Wealth')
-plt.ylabel('Party')
-plt.title('Percentage Distribution of Parties with the Most Wealthy Candidates')
-plt.show()
+# plt.figure(figsize=(10, 6))
+# sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='magma')
+# plt.xlabel('Percentage of Total Wealth')
+# plt.ylabel('Party')
+# plt.title('Percentage Distribution of Parties with the Most Wealthy Candidates')
+# plt.show()
 # ***********************************************************************************************************************************
 
 # Remove leading/trailing spaces from column names
