@@ -32,6 +32,9 @@ def convert_to_float(crore_str):
 data = pd.read_csv('train.csv')
 data_test = pd.read_csv('test.csv')
 
+# Encode the target variable
+label_encoder1 = LabelEncoder()
+data['Education'] = label_encoder1.fit_transform(data['Education'])
 # Explore the data
 # print(data.head())
 # # Plot representing the percentage of candidates with criminal records.*********************************************************
@@ -89,27 +92,30 @@ try:
 except:
     print("Error occurred during conversion. Check data format!")
 
+
 # Drop columns (if desired)
 data['tot_revenue'] = data['Total Assets'] - data['Liabilities']
 data_test['tot_revenue'] = data_test['Total Assets'] - data_test['Liabilities']
-drop_cols = ['ID', 'Candidate', 'Constituency ∇', 'Education','Total Assets','Liabilities']
-X = data.drop(columns=drop_cols)
-X_test = data_test.drop(columns=['ID', 'Candidate', 'Constituency ∇','Total Assets', 'Liabilities'])
-y = data['Education']
-
 # Encode categorical variables
-X = pd.get_dummies(X, columns=['Party', 'state'])
-X_test = pd.get_dummies(X_test, columns=['Party', 'state'])
+X = pd.get_dummies(data, columns=['Party', 'state'])
+X_test = pd.get_dummies(data_test, columns=['Party', 'state'])
+drop_cols = ['ID', 'Candidate', 'Constituency ∇', 'Education','Total Assets','Liabilities']
+y = X['Education']
+X.drop(columns=drop_cols,inplace=True)
+X_test.drop(columns=['ID', 'Candidate', 'Constituency ∇','Total Assets', 'Liabilities'],inplace=True)
+
+
 # Split data into train and test sets
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2024)
 
 
-model = BernoulliNB(alpha=0.7, binarize=0.1,fit_prior=True,class_prior=None)
+model = BernoulliNB(alpha=0.5, binarize=0.1,fit_prior=True,class_prior=None)
 model.fit(X, y)
 
 # # # Predictions
 y_pred = model.predict(X_test)
-
+y_pred = label_encoder1.inverse_transform(y_pred)
+print(y_pred)
 predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
 
 # # # Write predictions to a CSV file
