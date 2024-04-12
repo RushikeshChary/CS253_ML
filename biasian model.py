@@ -34,6 +34,41 @@ data_test = pd.read_csv('test.csv')
 
 # Explore the data
 # print(data.head())
+# # Plot representing the percentage of candidates with criminal records.*********************************************************
+
+# Filter the dataset to include only candidates with criminal records
+criminal_records_data = data[data['Criminal Case'] > 0]
+
+# Group the data by party and count the number of candidates in each party
+party_counts = criminal_records_data['Party'].value_counts()
+
+# Calculate the percentage of candidates in each party
+percentage_distribution = (party_counts / party_counts.sum()) * 100
+
+# Plot the percentage distribution
+plt.figure(figsize=(15, 12))
+sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='viridis')
+plt.xlabel('Percentage of Candidates with Criminal Records')
+plt.ylabel('Party')
+plt.title('Percentage Distribution of Parties with Candidates Having Criminal Records')
+plt.show()
+
+# # Plot representing the party's percentage wealth.***************************************************************************
+wealthy_candidates_data = data[data['Total Assets'] > 0]
+
+# Group the data by party and calculate the total declared wealth for candidates in each party
+party_wealth = wealthy_candidates_data.groupby('Party')['Total Assets'].sum()
+
+total_wealth = party_wealth.sum()
+percentage_distribution = (party_wealth / total_wealth) * 100
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=percentage_distribution.values, y=percentage_distribution.index, palette='magma')
+plt.xlabel('Percentage of Total Wealth')
+plt.ylabel('Party')
+plt.title('Percentage Distribution of Parties with the Most Wealthy Candidates')
+plt.show()
+# ***********************************************************************************************************************************
 
 # Remove leading/trailing spaces from column names
 data.columns = data.columns.str.strip()
@@ -46,12 +81,6 @@ label_encoder = LabelEncoder()
 data['Constituency'] = label_encoder.fit_transform(data['Constituency'])
 data_test['Constituency'] = label_encoder.transform(data_test['Constituency'])
 
-# Print unique labels and their corresponding encodings
-# label_mapping = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
-# print("Label Encoding Mapping:")
-# for label, encoding in label_mapping.items():
-#     print(f"{label}: {encoding}")
-# Apply conversion function to monetary columns (handling potential errors)
 try:
     data['Total Assets'] = data['Total Assets'].apply(convert_to_float)
     data['Liabilities'] = data['Liabilities'].apply(convert_to_float)
@@ -74,38 +103,17 @@ X_test = pd.get_dummies(X_test, columns=['Party', 'state'])
 # Split data into train and test sets
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2024)
 
-# from sklearn.model_selection import GridSearchCV
 
-# # Define the parameter grid
-# param_grid = {
-#     'alpha': [0.1,0.2,0.3,0.4 ,0.5,0.6,0.7,0.8,0.9, 1.0],
-#     'binarize': [0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0],
-#     'fit_prior': [True, False]
-# }
-
-# # Create the grid search object
-# grid_search = GridSearchCV(BernoulliNB(), param_grid, cv=5, scoring='f1_weighted')
-
-# # Perform the grid search on the training data
-# grid_search.fit(X, y)
-
-# # Get the best parameters and the corresponding accuracy score
-# best_params = grid_search.best_params_
-# best_score = grid_search.best_score_
-
-# print("Best Parameters:", best_params)
-# print("Best Accuracy Score:", best_score)
-
-# model = BernoulliNB(alpha=0.7, binarize=0.1,fit_prior=True,class_prior=None)
-# model.fit(X, y)
+model = BernoulliNB(alpha=0.7, binarize=0.1,fit_prior=True,class_prior=None)
+model.fit(X, y)
 
 # # # Predictions
-# y_pred = model.predict(X_test)
+y_pred = model.predict(X_test)
 
-# predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
+predictions_df = pd.DataFrame({'ID': np.arange(len(y_pred)), 'Education': y_pred})
 
 # # # Write predictions to a CSV file
-# predictions_df.to_csv('predictions.csv', index=False)
+predictions_df.to_csv('predictions.csv', index=False)
 
 # Evaluation
 # print("Accuracy:", accuracy_score(y_test, y_pred))
